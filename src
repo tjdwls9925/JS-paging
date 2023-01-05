@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .paging a {
+            font-size: 1.500rem;
+        }
+
+        .paging a.on {
+            text-decoration: none;
+            color: #FF0000;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+</head>
+
+<body>
+    <div class="paging"></div>
+
+<script>
+
+    const totalCountSet = 50;
+    const common = {
+        totalCount : totalCountSet,
+        recordsPerPage : 10,
+        navPage : 1
+    };
+
+    $(document).ready(function(){
+        // 페이지 정보 초기화
+        setPageInfo(common.recordsPerPage , common.navPage , 1);
+        // 데이터 조회
+        selectDataList();
+
+    });
+
+    function selectDataList(){
+        //Ajax Success 이후 paging set 설정
+        const pageInfo = getPageInfo();
+        paging($('.paging') , common.totalCount , pageInfo.recordsPerPage , pageInfo.navPage , pageInfo.currentPage , true);
+    }
+
+
+    function paging(appendEle , totalCount , recordsPerPage , navPage , currentPage , sellBoolean){
+        const totalPage = Math.ceil(totalCount / recordsPerPage) //총 페이지 수
+        const pageGroup = Math.ceil(currentPage / navPage); //페이지 그룹
+
+        let last = pageGroup * navPage; //화면에 보여질 마지막 페이지 번호
+        if(last > totalPage){
+            last = totalPage;
+        }
+
+        const first = last - (navPage - 1); // 화면에 보여질 첫번째 페이지 번호
+
+        const foreFront = 1;
+        const prev = first - 1;
+        const next = last + 1;
+        const rearMost = totalPage;
+
+        console.log('foreFront : ' + foreFront); //맨앞 (<<)
+        console.log('first : ' + first); 
+        console.log('prev : ' + prev); //이전 페이지 번호 (<)
+        console.log('currentPage : ' + currentPage); 
+        console.log('next : ' + next); //다음 페이지 번호 (>)
+        console.log('last : ' + last); 
+        console.log('totalPage : ' + totalPage); //맨뒤 (>>)
+
+        let innerHtml = '';
+
+        //맨앞 , 이전 Set
+        if(prev > 0){
+            sellBoolean ? innerHtml += '<a href=# onclick="movePage('+ foreFront+')"> << </a>' : innerHtml += '';
+            innerHtml += '<a href=# onclick="movePage('+prev+')"> < </a>';
+        }
+
+        //페이지 Set
+        for(let i=first; i<=last; i++){
+            if(currentPage === i){
+                innerHtml += '<a href=# class"on" onclick="movePage('+i+')">' + i + '</a>';
+            }else{
+                innerHtml += '<a href=# onclick="movePage('+i+')">' + i + '</a>';
+            }
+        }
+
+        //다음 , 맨뒤 set
+        if(last < totalPage){
+            innerHtml += '<a href=# onclick="movePage('+next+')"> > </a>';
+            sellBoolean ? innerHtml += '<a href=# onclick="movePage('+rearMost+')"> >> </a>' : innerHtml += '';
+        }
+        
+        // 페이지 생성
+        appendEle.empty();
+        appendEle.append(innerHtml);
+    }
+    //페이지 이동
+    function movePage(currentPage){
+        const pageInfo = getPageInfo();
+        setPageInfo(pageInfo.recordsPerPage , pageInfo.navPage , currentPage);
+
+        selectDataList();
+    }
+    // 페이지 정보 Set
+    function setPageInfo(recordsPerPage , navPage , currentPage){
+        const pageInfo = {
+            recordsPerPage : recordsPerPage,
+            navPage : navPage,
+            currentPage : currentPage
+        };
+
+        sessionStorage.setItem('pageInfo' , JSON.stringify(pageInfo));
+    }
+
+    //페이지 정보 Get
+    function getPageInfo(){
+        return JSON.parse(sessionStorage.getItem('pageInfo'));
+    }
+
+</script>
+
+</body>
+
+</html>
